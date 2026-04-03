@@ -131,6 +131,12 @@ python demo.py
 
 ### Ingestion Quality Report
 *The system understands its own knowledge boundaries before answering a single query.*
+
+
+
+<img width="1083" height="535" alt="image" src="https://github.com/user-attachments/assets/795cbdc0-f8fc-420f-83bf-139b5145d6d7" />
+
+
 ```text
 ==================================================
 INGESTION QUALITY REPORT
@@ -147,6 +153,11 @@ Category Distribution (Chunk Topics):
 
 ### Query Execution Results
 *Reciprocal Rank Fusion combines evidence across abstraction levels, while Intent-based routing ensures each query searches at the right cognitive zoom level.*
+
+<img width="974" height="515" alt="image" src="https://github.com/user-attachments/assets/418e9c40-a41d-4512-9d80-b7e2f7708b9a" />
+
+
+
 ```text
 QUERY: 'What was OmniTech's revenue in Q3?'
 Detected Intent / Boost: Layer 4: Distilled Keywords
