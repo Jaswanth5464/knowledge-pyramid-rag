@@ -187,3 +187,11 @@ The pyramid doesn't just store documents differently.
 It stores them at **multiple levels of human-like understanding** — so the retrieval system doesn't search text, it searches cognition.
 
 This is the foundation for enterprise RAG systems that actually work on complex analytical questions, effectively shifting the cognitive burden from query-time hallucination mitigation to ingestion-time knowledge distillation!
+
+---
+
+## Output Profile & Contact
+**Jaswanth Kanamrlapudi**
+* 📧 Email: [jaswanth5464@gmail.com](mailto:jaswanth5464@gmail.com)
+* 💼 LinkedIn: [jaswanth-kanamrlapudi-a41197252](https://www.linkedin.com/in/jaswanth-kanamrlapudi-a41197252)
+* 💻 GitHub: [@Jaswanth5464](https://github.com/Jaswanth5464)
