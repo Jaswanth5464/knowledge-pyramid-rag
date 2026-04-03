@@ -48,6 +48,30 @@ graph TD
     RRF -->|Cross-layer merge| Results[Ranked Results]:::input
 ```
 
+## How It Works (A Simple Example)
+
+If you hand a traditional AI a 500-page corporate document and ask, *"What was Q3 revenue?"*, it blindly chops the document into 1,000 random paragraphs. It then uses basic math to guess which paragraph looks the most like your question. It frequently fails because the word "revenue" might be in one paragraph, but the actual dollar amount is in the next. The context is destroyed.
+
+**Our system acts like a professional librarian. It processes the document *before* anyone is allowed to ask a question:**
+
+1. **Smart Ingestion (The Sliding Window):** 
+   Instead of chopping pages randomly, the system reads Page 1 and Page 2 together. Then it reads Page 2 and Page 3 together. This overlapping "sliding window" guarantees that a sentence split across two pages is never taken out of context.
+
+2. **Building the Pyramid (Distillation):** 
+   While reading those pages, it doesn't just save the raw text. It builds a meticulously organized 4-layer "Knowledge Pyramid" index for that specific chunk:
+   - **Layer 1 (Raw Text):** The exact, full-fidelity words on the page.
+   - **Layer 2 (Summary):** It automatically generates a compressed 2-sentence summary of the page.
+   - **Layer 3 (Category):** It flags the page with a thematic sticky note (like *[Risk & Compliance]*).
+   - **Layer 4 (Keywords):** It extracts a list of the most mathematically significant, factual words.
+
+3. **Intent Routing (The Detective):** 
+   When a user finally asks *"What was Q3 revenue?"*, the system analyzes the question first. It realizes this is a "fact-finding" inquiry. Instead of searching all the broad text, it proactively tells the search engine: *"Ignore the thematic summaries; prioritize searching the Layer 4 Keywords."*
+
+4. **Score Fusion (Double-Checking the Evidence):** 
+   The semantic search engine evaluates the text. If it finds strong evidence for the answer in the Layer 4 Keywords, AND it also finds supporting evidence in the Layer 2 Summary of the exact same chunk, it statistically fuses those scores together using **Reciprocal Rank Fusion (RRF)**. 
+
+**The Result:** The system retrieves a final answer with a mathematically sound "High Confidence" score. It avoids hallucinations entirely because it mapped the cognitive intent of the user's question directly to the correct abstraction layer of the data.
+
 ## The Solution: A Pre-Computed Reasoning Cache
 This system creates an **Agentic Knowledge Pyramid**. By using a 2-page sliding window (to solve edge-context loss), every chunk of text is analyzed and distilled into 4 distinct "zoom levels":
 
