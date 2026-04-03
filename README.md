@@ -10,44 +10,42 @@ This works for simple queries but fails dramatically on:
 1. **Thematic Questions**: ("What is their AI strategy?")
 2. **Fact-Finding across Noise**: ("What was Q3 revenue?")
 
-## Architecture
+## Architecture Diagram
 
-```text
-Document Pages
-      │
-      ▼
-┌─────────────────────┐
-│  Sliding Window     │  ← 2-page overlap, step=1
-│  Chunker            │
-└─────────┬───────────┘
-          │ per chunk
-    ┌─────▼──────────────────────────────────┐
-    │           Knowledge Pyramid             │
-    │  L1: Raw Text        (full fidelity)    │
-    │  L2: Summary         (compressed)       │
-    │  L3: Category        (topic signal)     │
-    │  L4: Keywords        (atomic facts)     │
-    └─────────────────────┬──────────────────┘
-                          │
-              ┌───────────▼───────────┐
-              │    Query Arrives      │
-              └───────────┬───────────┘
-                          │
-              ┌───────────▼───────────┐
-              │  Intent Classifier    │  ← routes to best layer
-              └───────────┬───────────┘
-                          │
-              ┌───────────▼───────────┐
-              │  Cosine Sim Search    │  ← all 4 layers
-              └───────────┬───────────┘
-                          │
-              ┌───────────▼───────────┐
-              │  RRF Score Fusion     │  ← cross-layer merge
-              └───────────┬───────────┘
-                          │
-              ┌───────────▼───────────┐
-              │  Ranked Results       │  ← layer + score + pages
-              └───────────────────────┘
+```mermaid
+graph TD
+    classDef input fill:#2c3e50,stroke:#34495e,color:#fff,stroke-width:2px,rx:5px,ry:5px;
+    classDef process fill:#34495e,stroke:#2c3e50,color:#fff,stroke-width:2px,rx:5px,ry:5px;
+    classDef knowledge fill:#27ae60,stroke:#2ecc71,color:#fff,stroke-width:2px,rx:5px,ry:5px;
+    classDef search fill:#8e44ad,stroke:#9b59b6,color:#fff,stroke-width:2px,rx:5px,ry:5px;
+    classDef intent fill:#c0392b,stroke:#e74c3c,color:#fff,stroke-width:2px,rx:5px,ry:5px;
+
+    %% Ingestion Phase
+    Docs[Document Pages]:::input -->|2-Page Sliding Window| Chunker[Chunker]:::process
+    
+    subgraph Knowledge Pyramid
+        Chunker --> L1[Layer 1: Raw Text]:::knowledge
+        Chunker --> L2[Layer 2: Chunk Summary]:::knowledge
+        Chunker --> L3[Layer 3: Category / Theme]:::knowledge
+        Chunker --> L4[Layer 4: Distilled Keywords]:::knowledge
+    end
+    
+    %% Storage
+    L1 -.-> DB[(Vector Database)]
+    L2 -.-> DB
+    L3 -.-> DB
+    L4 -.-> DB
+    
+    %% Retrieval Phase
+    Query[User Query]:::input --> Intent{Intent Classifier}:::intent
+    Query --> Embed[Embed Query]:::process
+    
+    Embed --> Search[Cosine Sim Search]:::search
+    DB --> Search
+    Intent -->|Boosts target layer| Search
+    
+    Search --> RRF[RRF Score Fusion]:::process
+    RRF -->|Cross-layer merge| Results[Ranked Results]:::input
 ```
 
 ## The Solution: A Pre-Computed Reasoning Cache
