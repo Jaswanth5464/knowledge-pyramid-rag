@@ -137,55 +137,17 @@ python demo.py
 <img width="1083" height="535" alt="image" src="https://github.com/user-attachments/assets/795cbdc0-f8fc-420f-83bf-139b5145d6d7" />
 
 
-```text
-==================================================
-INGESTION QUALITY REPORT
-==================================================
-Pages processed:      3
-Chunks created:       2 (2-page sliding window)
-Total Pyramid nodes:  8
---------------------------------------------------
-Category Distribution (Chunk Topics):
-  - Technology & AI: 1 chunk(s)
-  - Risk & Compliance: 1 chunk(s)
-==================================================
-```
+
 
 ### Query Execution Results
 *Reciprocal Rank Fusion combines evidence across abstraction levels, while Intent-based routing ensures each query searches at the right cognitive zoom level.*
+
+
 
 <img width="974" height="515" alt="image" src="https://github.com/user-attachments/assets/418e9c40-a41d-4512-9d80-b7e2f7708b9a" />
 
 
 
-```text
-QUERY: 'What was OmniTech's revenue in Q3?'
-Detected Intent / Boost: Layer 4: Distilled Keywords
-Verdict:     HIGH CONFIDENCE MATCH (Score: 0.91)
-Matched at:  Layer 4: Distilled Keywords
-Source Pages: 1-2
-Note:        Cross-layer reciprocal rank fusion applied
-Node Content: strategy, billion, omnitech, positioning, enterprise, share, infrastructure, foundational, expenditures, accelerated, integrating, investments
-RAG Context: OmniTech Corp Q3 2024 Financial Report.     OmniTech reported record third-quarter revenue of $24.5 billion,      an ...
-
-QUERY: 'What compliance and legal risks does the company face?'
-Detected Intent / Boost: Layer 3: Category
-Verdict:     HIGH CONFIDENCE MATCH (Score: 0.89)
-Matched at:  Layer 3: Category
-Source Pages: 2-3
-Note:        Cross-layer reciprocal rank fusion applied
-Node Content: [Risk & Compliance] compliance, strategy, legal, regulatory, risk, positioning, obligations, enterprise, infrastructure, jurisdictions, foundational, expenditures
-RAG Context: AI Strategy and Market Positioning.     OmniTech's strategy positions the company as the foundational AI layer      f...
-
-QUERY: 'How is the company positioning its AI strategy?'
-Detected Intent / Boost: Layer 2: Summary
-Verdict:     HIGH CONFIDENCE MATCH (Score: 0.98)
-Matched at:  Layer 2: Summary
-Source Pages: 2-3
-Note:        Cross-layer reciprocal rank fusion applied
-Node Content: AI Strategy and Market Positioning. OmniTech's strategy positions the company as the foundational AI layer      for enterprise adoption.
-RAG Context: AI Strategy and Market Positioning.     OmniTech's strategy positions the company as the foundational AI layer      f...
-```
 
 ## Limitations & Future Work
 Every robust architecture has constraints. Here is where this implementation breaks down and how to scale it:
