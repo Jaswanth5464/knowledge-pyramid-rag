@@ -72,25 +72,24 @@ If you hand a traditional AI a 500-page corporate document and ask, *"What was Q
 
 **The Result:** The system retrieves a final answer with a mathematically sound "High Confidence" score. It avoids hallucinations entirely because it mapped the cognitive intent of the user's question directly to the correct abstraction layer of the data.
 
-## The Solution: A Pre-Computed Reasoning Cache
-This system creates an **Agentic Knowledge Pyramid**. By using a 2-page sliding window (to solve edge-context loss), every chunk of text is analyzed and distilled into 4 distinct "zoom levels":
-
-- **Layer 1: Raw Text** (Full fidelity context)
-- **Layer 2: Summary** (Context-aware compression for broad reasoning)
-- **Layer 3: Category / Theme** (Rule-based categorization for thematic routing)
-- **Layer 4: Distilled Keywords** (High-signal atomic facts with noise removed)
-
 ## Project Structure
 
 ```text
-knowledge_pyramid/
+datainjection_pyramid/
 │
-├── README.md          ← you are here
+├── demo.py            ← sample document + test queries
 ├── pyramid.py         ← sliding window + 4-layer builder
 ├── embedder.py        ← sentence-transformers + cosine similarity  
 ├── retrieval.py       ← intent routing + RRF fusion
-├── demo.py            ← sample document + test queries
-└── requirements.txt   ← dependencies
+├── requirements.txt   ← Part 1 dependencies
+├── README.md          ← you are here
+│
+├── part2_gsm8k/
+│   ├── gsm8k_finetuning.ipynb  ← SINGLE file for Kaggle (no upload needed) ✅
+│   └── requirements.txt        ← Part 2 dependencies
+│
+└── bonus/
+    └── reasoning_adapter.py    ← 3-Stage Hybrid Classifier
 ```
 
 ## Why This Implementation is Unique
@@ -160,6 +159,108 @@ The pyramid doesn't just store documents differently.
 It stores them at **multiple levels of human-like understanding** — so the retrieval system doesn't search text, it searches cognition.
 
 This is the foundation for enterprise RAG systems that actually work on complex analytical questions, effectively shifting the cognitive burden from query-time hallucination mitigation to ingestion-time knowledge distillation!
+
+---
+
+---
+
+# Part 2 — GSM8K Fine-Tuning with LLaMA 3.2 1B + LoRA
+
+> **Requires GPU** — Run in [Kaggle Notebooks](https://kaggle.com/code) (free, 30h/week) or Google Colab.
+
+Fine-tunes LLaMA 3.2 1B on 3000 grade-school math problems (GSM8K) using LoRA — a parameter-efficient method that trains only ~10M of the 1B parameters, making training feasible on a free T4 GPU in ~45–60 min.
+
+## Part 2 File Structure
+
+```text
+part2_gsm8k/
+│
+├── gsm8k_finetuning.ipynb  ← Main deployment file
+├── requirements.txt        ← Kaggle-only dependencies
+└── training_log.txt        ← [Add after training] Output proof
+```
+
+**Step 1 — Create a Kaggle account**  
+Go to [kaggle.com](https://www.kaggle.com) → Sign Up (free).
+
+**Step 2 — Create a new Notebook**  
+Click `+ New Notebook` → choose Python.
+
+**Step 3 — Enable GPU**  
+Right panel → Settings → Accelerator → `GPU T4 x2` → Save.
+
+**Step 4 — Enable Internet**  
+Right panel → Internet → On.
+
+**Step 5 — Add your HuggingFace token**  
+In Kaggle: Add-ons → Secrets → add `HF_TOKEN = <your_token>`
+
+**Step 6 — Upload & Run**  
+- Click **File → Import Notebook**
+- Upload `gsm8k_finetuning.ipynb` from the `part2_gsm8k/` folder.
+- Run all 8 cells in order. Training takes ~45-60 min.
+
+**Step 7 — Save the output log**  
+Copy the final summary table and paste it into `part2_gsm8k/training_log.txt`.
+
+## Training Configuration
+
+| Setting | Value | Reason |
+|---|---|---|
+| Model | LLaMA 3.2 1B (4-bit) | Assignment requirement; 4-bit saves ~75% VRAM |
+| Train samples | 3000 | Assignment requirement |
+| Eval samples | 1000 | Assignment requirement |
+| LoRA rank | 16 | Balanced learning vs memory on T4 |
+| LoRA alpha | 32 | 2× rank convention |
+| Target modules | q, k, v, o proj | Attention layers capture reasoning patterns |
+| Effective batch | 4 × accum 4 = 16 | Stable gradients within T4 memory limit |
+| Learning rate | 2e-4 | Standard for LoRA SFT |
+| Epochs | 3 | Enough passes without overfitting on 3000 samples |
+| Warmup steps | 100 | Prevent unstable early updates |
+
+## Expected Results (LLaMA 3.2 1B)
+
+| Model | Evaluated Samples | Accuracy |
+|---|---|---|
+| **Baseline** (No tuning) | 1000 | **~0-2%** (No #### format following) |
+| **Fine-tuned** (LoRA) | 1000 | **~25-35%** (High formula accuracy) |
+
+**Key Engineering Highlight:**
+The training uses **Answer-Only Label Masking** (masking prompt tokens with -100). This ensures the model's loss is calculated ONLY on the mathematical reasoning tokens, resulting in a cleaner and faster intelligence boost compared to naive training.
+
+---
+
+routes any incoming query to the correct reasoning module using a **3-Stage Hybrid Classifier**:
+
+1. **Stage 1 (Hard Rules):** Immediate mapping of high-confidence document/math keywords.
+2. **Stage 2 (Semantic Similarity):** Uses `all-MiniLM-L6-v2` to compare the query against an `ExampleBank` of known intent patterns.
+3. **Stage 3 (Keyword Fallback):** Heuristic scoring with "cross-category penalties" to resolve ambiguous business-math overlap.
+
+```text
+Any Question
+     ↓
+Hybrid Intent Classifier (Semantic + Rules)
+     ↓
+  Math query?      → Fine-tuned LLaMA (Part 2)
+  Document query?  → Knowledge Pyramid (Part 1)
+  Legal query?     → Legal module (placeholder)
+  Code query?      → Code module (placeholder)
+  Unclear?         → General fallback (Default: DOCUMENT)
+     ↓
+JSON Response: answer + intent + confidence + reasoning module used
+```
+
+### Run the Bonus Demo (No GPU Needed)
+
+```bash
+python bonus/reasoning_adapter.py
+```
+
+### Key Design Principle
+
+> "Each reasoning module is completely independent. You can improve the math module without touching the document module. You can add a new legal module without changing anything else. The classifier is the only shared component — it only makes routing decisions, it does NO reasoning itself."
+
+Adding a new module = one new function + one line in `ROUTING_TABLE`. Nothing else changes.
 
 ---
 

@@ -1,0 +1,7 @@
+[PASTE YOUR KAGGLE OUTPUT LOG HERE]
+
+Expected contents:
+1. Training loss logs (Cell 7 output)
+2. Final evaluation summary table (Cell 8 output)
+
+The presence of this log proves the model was successfully trained on a GPU.
